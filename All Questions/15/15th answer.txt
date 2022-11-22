@@ -1,0 +1,91 @@
+//Implement the program to reverse the given string using the Remote Method Invocation (RMI) mechanism.
+
+//Server.java
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
+
+class RMIDemoImpl extends UnicastRemoteObject implements RMIDemoInterface{
+ 	static final long serialVersionUID = 1L;
+	protected RMIDemoImpl() throws RemoteException {
+		super();
+	}
+
+	@Override
+	public String sayHello() throws RemoteException {
+		return "Hello Client! Welcome:";
+	}
+
+	@Override
+	public String reverseString(String str1) throws RemoteException{
+		String nstr="";
+        		char ch;
+		for (int i=0; i<str1.length(); i++)
+      		{
+        			ch= str1.charAt(i);
+        			nstr= ch+nstr;
+      		}
+      		return nstr;
+	}
+}
+public class RMIDemoServer {
+	public static void main(String[] args) {
+		try {
+			RMIDemoInterface rmiDemoObject = new RMIDemoImpl();
+			LocateRegistry.createRegistry(1099);
+			Naming.rebind("rmiDemoObject",rmiDemoObject);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+
+}
+
+//Interface.java
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+
+public interface RMIDemoInterface extends Remote{
+	public String sayHello() throws RemoteException;
+	public String reverseString(String str1) throws RemoteException;
+}
+
+//Client.java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+
+
+public class RMIDemoClient {
+	public static void main(String[] args) {
+		String url= "rmi://localhost:1099/rmiDemoObject";
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			RMIDemoInterface remoteIntf = (RMIDemoInterface) Naming.lookup(url);
+			System.out.println(remoteIntf.sayHello());
+			System.out.println("Enter string1:");
+			System.out.print("str1: ");
+			String str1 = br.readLine();
+			String ans = remoteIntf.reverseString(str1);
+			System.out.println(ans);
+			
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

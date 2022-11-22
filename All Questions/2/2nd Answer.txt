@@ -1,0 +1,110 @@
+//a. Implement Echo client-server application in JAVA using UDP.
+//EchoUDPServer.java
+import java.net.*;
+class UDPEchoServer
+{
+	public static void main(String args[]) throws Exception
+	{
+		DatagramSocket SrvSoc = new DatagramSocket(7777);
+		byte[] SData = new byte[1024];
+		System.out.println("Server Ready\n");
+		while (true)
+		{
+			byte[] RData = new byte[1024];
+			DatagramPacket RPack = new DatagramPacket(RData, RData.length);
+			SrvSoc.receive(RPack);
+			String Text = new String(RPack.getData());
+			if (Text.trim().length() > 0)
+			{
+				System.out.println("From Client <<< " + Text);
+				InetAddress IPAddr = RPack.getAddress();
+				int Port = RPack.getPort();
+				SData = Text.toUpperCase() .getBytes();
+				DatagramPacket SPack = new DatagramPacket(SData,
+				SData.length, IPAddr, Port);
+				SrvSoc.send(SPack);
+			}
+			else
+				break;
+		}
+		System.out.println("\nClient Quits\n");
+		SrvSoc.close();
+	}
+}
+
+//EchoUDPClient.java
+import java.io.*;
+import java.net.*;
+class UDPEchoClient
+{
+	public static void main(String args[]) throws Exception
+	{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		DatagramSocket CliSoc = new DatagramSocket();
+		InetAddress IPAddr;
+		String Text;
+		if (args.length == 0)
+			IPAddr = InetAddress.getLocalHost();
+		else
+			IPAddr = InetAddress.getByName(args[0]);
+			byte[] SData = new byte[1024];
+			System.out.println("To quit, press enter without text");
+			while (true)
+			{
+				System.out.print("\nEnter text for Server : ");
+				Text = br.readLine();
+				SData = Text.getBytes();
+				DatagramPacket SPack = new DatagramPacket(SData, SData.length, IPAddr, 7777);
+				CliSoc.send(SPack);
+				if (Text.trim().length() == 0)
+					break;
+				byte[] RData = new byte[1024];
+				DatagramPacket RPack = new DatagramPacket(RData, RData.length);
+				CliSoc.receive(RPack);
+				String Echo = new String(RPack.getData());
+				Echo = Echo.trim();
+				System.out.println("Echo from Server <<< " + Echo);
+			}
+			CliSoc.close();
+	}
+}
+
+
+//b. Implement a concurrent daytime client-server application in JAVA.
+//Server_DT
+import java.net.*; 
+import java.io.*; 
+import java.util.Date;  
+public class Server_DT 
+{  
+	public static void main(String[] args)throws IOException 
+	{ 
+		ServerSocket ss= new ServerSocket(5000); 
+		System.out.println("The Server has reserved port No.: "+ss.getLocalPort()+" for this Service"); 
+		Socket cs=ss.accept(); 
+		System.out.println("Client with IP Address "+cs.getInetAddress()+" has communicated via port No.: "+cs.getPort()); 
+		Date d=new Date(); 
+		String s="Current Date & Time on Server is:"+d; 
+		PrintWriter toclient=new PrintWriter(cs.getOutputStream(),true); 
+		toclient.print(s); 
+		toclient.close(); 
+		cs.close(); 
+		ss.close(); 
+	} 
+}
+
+//Client_DT
+import java.net.*; 
+import java.io.*; 
+public class Client_DT 
+{ 
+	public static void main(String[] args) throws UnknownHostException,IOException 
+	{ 
+		Socket cs= new Socket("LocalHost",5000); 
+		System.out.println("Client "+cs.getInetAddress()+" is communicating from port No.: "+cs.getPort()); 
+		BufferedReader fromserver=new BufferedReader(new InputStreamReader(cs.getInputStream())); 
+		System.out.println(fromserver.readLine()); 
+		fromserver.close(); 
+		cs.close(); 
+	}
+}

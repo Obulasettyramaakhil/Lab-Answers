@@ -1,0 +1,137 @@
+//Write a program to perform Matrix NxN Multiplication using the Remote Method Invocation (RMI) mechanism.
+
+//RMIServer.java
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
+
+class RMIDemoImpl extends UnicastRemoteObject implements RMIDemoInterface{
+	private static final long serialVersionUID = 1L;
+	protected RMIDemoImpl() throws RemoteException {
+		super();
+	}
+
+	@Override
+	public String sayHello() throws RemoteException {
+		return "Hello Client! Welcome:";
+	}
+
+	@Override
+	public int[][] mul(int matrix1[][], int matrix2[][], int r1, int c1, int r2, int c2) throws RemoteException {
+		int mul[][] = new int[r1][c2];
+		int i,j,k;
+    		for(i=0;i<r1;i++)
+    		{
+        			for(j=0;j<c2;j++)
+        			{
+            				mul[i][j]=0;
+            				for(k=0;k<r2;k++)
+            				{
+                					mul[i][j]=mul[i][j]+matrix1[i][k]*matrix2[k][j];
+            				}	
+        			}
+    		}
+		int result[][] = new int[r1][c2];
+    		for(i=0;i<r1;i++)
+    		{
+        			for(j=0;j<c2;j++)
+        			{
+            				result[i][j] = mul[i][j];
+        			}
+    		}
+		return result;
+	}	
+}
+public class RMIDemoServer {
+	public static void main(String[] args) {
+		try {
+			RMIDemoInterface rmiDemoObject = new RMIDemoImpl();
+			LocateRegistry.createRegistry(1099);
+			Naming.rebind("rmiDemoObject",rmiDemoObject);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+
+}
+
+//RMIClient.java
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
+
+public class RMIDemoClient {
+	public static void main(String[] args) {
+		String url= "rmi://localhost:1099/rmiDemoObject";
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			RMIDemoInterface remoteIntf = (RMIDemoInterface) Naming.lookup(url);
+			System.out.println(remoteIntf.sayHello());
+ 			System.out.println("Enter matrix1 of row1 number:");
+			System.out.print("r1: ");
+			int r1 = Integer.parseInt(br.readLine());
+			System.out.println("Enter matrix1 of column1 number:");
+			System.out.print("c1: ");
+			int c1 = Integer.parseInt(br.readLine());
+			System.out.println("Enter matrix2 of row2 number:");
+			System.out.print("r2: ");
+			int r2 = Integer.parseInt(br.readLine());
+			System.out.println("Enter matrix2 of column2 number:");
+			System.out.print("c2: ");
+			int c2 = Integer.parseInt(br.readLine());
+
+        				int matrix1[][] = new int[r1][c1];
+        				int matrix2[][] = new int[r2][c2];
+ 
+        				System.out.println("Enter values for matrix1 : \n");
+        				for (int i = 0; i < r1; i++) {
+            					for (int j = 0; j < c1; j++) 
+                						matrix1[i][j] = Integer.parseInt(br.readLine());
+        				}
+        				System.out.println("Enter values for matrix2 : \n");
+        				for (int i = 0; i < r2; i++) {
+            					for (int j = 0; j < c2; j++) 
+                						matrix2[i][j] = Integer.parseInt(br.readLine());
+        				}
+        			System.out.println("Enter values for result : \n");
+			int result[][] = new int[r1][c2];
+			for(int i = 0; i < r1; i++)
+			{
+				for(int j = 0; j < c2; j++)
+				{
+					result = remoteIntf.mul(matrix1, matrix2, r1, c1, r2, c2);
+					System.out.print(result[i][j]+" ");
+				}
+				System.out.println();
+			}
+			
+			
+		} catch (MalformedURLException | RemoteException | NotBoundException e) {
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+//RMIInterface.java
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
+
+public interface RMIDemoInterface extends Remote{
+	public String sayHello() throws RemoteException;
+	public int[][] mul(int matrix1[][], int matrix2[][], int r1, int c1, int r2, int c2) throws RemoteException;
+}
+

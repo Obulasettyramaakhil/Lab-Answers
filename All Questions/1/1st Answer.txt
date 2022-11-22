@@ -1,0 +1,142 @@
+//a. Implement Echo client-server application in JAVA using TCP.
+
+//EchoServer.java
+import java.io.*;
+import java.net.*;
+public class EchoServer
+{
+	public EchoServer(int portnum)
+	{
+		try
+		{
+			server = new ServerSocket(portnum);
+		}
+		catch (Exception err)
+		{
+			System.out.println(err);
+		}
+	}
+	public void serve()
+	{
+		try
+		{
+			while (true)
+			{
+				Socket client = server.accept();
+				BufferedReader r = new BufferedReader(new InputStreamReader(client.getInputStream()));
+				PrintWriter w = new PrintWriter(client.getOutputStream(), true);
+				w.println("Welcome to the Java EchoServer. Type 'bye' to close.");
+				String line;
+				do
+				{
+					line = r.readLine();
+					if ( line != null )
+						w.println("Got: "+ line);
+						System.out.println (line);
+				}
+				while ( !line.trim().equals("bye") );
+				client.close();
+			}
+		}
+		catch (Exception err)
+		{
+			System.err.println(err);
+		}
+	}
+	public static void main(String[] args)
+	{
+		EchoServer s = new EchoServer(9999);
+		s.serve();
+	}
+	private ServerSocket server;
+}
+
+
+//EchoClient.java
+import java.io.*;
+import java.net.*;
+public class EchoClient
+{
+	public static void main(String[] args)
+	{
+		try
+		{
+			Socket s = new Socket("127.0.0.1", 9999);
+			BufferedReader r = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			PrintWriter w = new PrintWriter(s.getOutputStream(), true);
+			BufferedReader con = new BufferedReader(new InputStreamReader(System.in));
+			String line;
+			do
+			{
+				line = r.readLine();
+				if ( line != null )
+					System.out.println(line);
+					line = con.readLine();
+					w.println(line);
+			}
+			while ( !line.trim().equals("bye") );
+		}
+		catch (Exception err)
+		{
+			System.err.println(err);
+		}
+	}
+}
+
+
+
+
+
+//b. Implement a concurrent daytime client-server application in JAVA.
+//TCPDateServer.java
+import java.net.*; 
+import java.io.*; 
+import java.util.Date;  
+public class Server_DT 
+{  
+	public static void main(String[] args)throws IOException 
+	{ 
+		ServerSocket ss= new ServerSocket(5000); 
+		System.out.println("The Server has reserved port No.: "+ss.getLocalPort()+" for this Service"); 
+		Socket cs=ss.accept(); 
+		System.out.println("Client with IP Address "+cs.getInetAddress()+" has communicated via port No.: "+cs.getPort()); 
+		Date d=new Date(); 
+		String s="Current Date & Time on Server is:"+d; 
+		PrintWriter toclient=new PrintWriter(cs.getOutputStream(),true); 
+		toclient.print(s); 
+		toclient.close(); 
+		cs.close(); 
+		ss.close(); 
+	} 
+}
+
+//TCPDateClient.java
+import java.net.*;
+import java.io.*;
+class TCPDateClient
+{
+	public static void main (String args[])
+	{
+		Socket soc;
+		BufferedReader dis;
+		String sdate;
+		PrintStream ps;
+		try
+		{
+			InetAddress ia = InetAddress.getLocalHost();
+			if (args.length == 0)
+				soc = new Socket(InetAddress.getLocalHost(),4444);
+			else
+				soc = new Socket(InetAddress.getByName(args[0]), 4444);
+				dis = new BufferedReader(new InputStreamReader(soc.getInputStream()));
+				sdate=dis.readLine();
+				System.out.println("The date/time on server is : " + sdate);
+				ps = new PrintStream(soc.getOutputStream()); ps.println(ia);
+				ps.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("THE EXCEPTION is :" + e);
+		}
+	}
+}
