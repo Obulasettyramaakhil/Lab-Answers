@@ -108,7 +108,7 @@ public class RMIDemoClient {
 			{
 				for(int j = 0; j < c2; j++)
 				{
-					System.out.print(result[i][i] + " ");
+					System.out.print(result[i][j] + " ");
 				}
 				System.out.println();
 			}
